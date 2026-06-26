@@ -609,9 +609,9 @@ Produce all requested content types in one response. Nothing before the first ==
     const userPrompt = `Here is this week's Grok research pack:\n\n${input}\n\nProduce the following content types based on this research:\n${requestedFormats}\n\nPick the single most compelling finding from the research as the week's theme and anchor all content around it. Spread posts across Tuesday to Saturday — two LinkedIn articles Tuesday and Thursday, carousel Wednesday, reel Friday, two static image posts Wednesday and Saturday.`;
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('/api/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': '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', 'anthropic-version': '2023-06-01' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 7000,
