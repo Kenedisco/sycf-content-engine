@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYCF Content Engine</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #e8c96a;
+    --gold-dim: rgba(201,168,76,0.15);
+    --gold-border: rgba(201,168,76,0.3);
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #181818;
+    --bg4: #222222;
+    --text: #e8e8e8;
+    --text-dim: #888;
+    --text-muted: #555;
+    --radius: 6px;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--gold-border);
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .logo span {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .week-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border: 1px solid var(--bg4);
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  /* MAIN */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 40px 100px;
+  }
+
+  /* INTRO */
+  .intro {
+    margin-bottom: 48px;
+  }
+  .intro h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .intro h1 em {
+    color: var(--gold);
+    font-style: normal;
+  }
+  .intro p {
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 560px;
+  }
+
+  /* STEPS */
+  .steps {
+    display: flex;
+    gap: 0;
+    margin-bottom: 48px;
+    border: 1px solid var(--bg4);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .step {
+    flex: 1;
+    padding: 20px 24px;
+    border-right: 1px solid var(--bg4);
+    position: relative;
+  }
+  .step:last-child { border-right: none; }
+  .step-num {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .step p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* INPUT SECTION */
+  .input-section {
+    margin-bottom: 40px;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 220px;
+    background: var(--bg2);
+    border: 1px solid var(--bg4);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 20px;
+    resize: vertical;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  textarea:focus {
+    border-color: var(--gold-border);
+  }
+  textarea::placeholder { color: var(--text-muted); }
+
+  /* OPTIONS ROW */
+  .options-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .option-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid var(--bg4);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .option-chip input { display: none; }
+  .option-chip.active {
+    border-color: var(--gold-border);
+    color: var(--gold);
+    background: var(--gold-dim);
+  }
+  .option-chip:hover { border-color: var(--gold-border); }
+
+  /* GENERATE BUTTON */
+  .btn-generate {
+    margin-top: 24px;
+    width: 100%;
+    padding: 18px;
+    background: var(--gold);
+    color: #000;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-generate:hover { background: var(--gold-light); }
+  .btn-generate:active { transform: scale(0.99); }
+  .btn-generate:disabled {
+    background: var(--bg4);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* LOADING */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 60px 0;
+  }
+  .loading.visible { display: block; }
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--bg4);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .loading-msg {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 20px;
+  }
+
+  /* OUTPUT SECTION */
+  #output { display: none; }
+  #output.visible { display: block; }
+
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--bg4);
+  }
+  .output-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: #fff;
+  }
+  .output-header h2 span { color: var(--gold); }
+  .btn-reset {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid var(--bg4);
+    padding: 7px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+  }
+  .btn-reset:hover { border-color: var(--gold-border); color: var(--gold); }
+
+  /* CONTENT CARDS */
+  .content-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .content-card {
+    background: var(--bg2);
+    border: 1px solid var(--bg4);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .content-card:hover { border-color: var(--gold-border); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--bg3);
+    background: var(--bg3);
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .card-day {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .card-type {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .card-platforms {
+    display: flex;
+    gap: 6px;
+  }
+  .platform-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: var(--bg4);
+    color: var(--text-muted);
+  }
+
+  .card-body {
+    padding: 24px;
+  }
+  .card-body pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .card-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--bg3);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .btn-copy {
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 8px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+    color: var(--gold);
+  }
+  .btn-copy:hover { background: var(--gold); color: #000; }
+  .btn-copy.copied { background: #1a3a1a; border-color: #2d6b2d; color: #5cb85c; }
+
+  /* ERROR */
+  .error-box {
+    display: none;
+    background: #1a0a0a;
+    border: 1px solid #3a1a1a;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    color: #cc5555;
+    font-size: 14px;
+    margin-top: 16px;
+  }
+  .error-box.visible { display: block; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 40px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--bg4);
+    margin-top: 80px;
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 16px 20px; }
+    main { padding: 40px 20px 80px; }
+    .steps { flex-direction: column; }
+    .step { border-right: none; border-bottom: 1px solid var(--bg4); }
+    .step:last-child { border-bottom: none; }
+    .intro h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    Sound You Can Feel
+    <span>Content Engine &nbsp;·&nbsp; Internal Tool</span>
+  </div>
+  <div class="week-badge" id="weekBadge">Loading week...</div>
+</header>
+
+<main>
+  <div class="intro">
+    <h1>Weekly Content<br><em>Generator</em></h1>
+    <p>Paste the Monday Grok research email below. Hit Generate. Get 4 platform-ready posts in Kennedy's voice.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">Step 1</div>
+      <p>Kennedy forwards the Grok email Monday 6am</p>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 2</div>
+      <p>Paste the full email content below</p>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 3</div>
+      <p>Hit Generate — 4 posts ready in ~30 seconds</p>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 4</div>
+      <p>Copy each post, design in Canva, schedule in Metricool</p>
+    </div>
+  </div>
+
+  <div class="input-section">
+    <div class="section-label">Grok Research Email — paste full content here</div>
+    <textarea id="grokInput" placeholder="Paste the Monday Grok email here...&#10;&#10;Include all findings, stats, content ideas and anything else Grok sent."></textarea>
+
+    <div class="options-row">
+      <label class="option-chip active" id="chip-linkedin">
+        <input type="checkbox" checked> LinkedIn Article
+      </label>
+      <label class="option-chip active" id="chip-carousel">
+        <input type="checkbox" checked> Data Carousel
+      </label>
+      <label class="option-chip active" id="chip-reel">
+        <input type="checkbox" checked> Reel Script
+      </label>
+      <label class="option-chip active" id="chip-static">
+        <input type="checkbox" checked> Static Image Post
+      </label>
+    </div>
+
+    <button class="btn-generate" id="generateBtn" onclick="generate()">
+      Generate This Week's Content
+    </button>
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Writing in Kennedy's voice...</p>
+    <div class="loading-msg" id="loadingMsg">Analysing research findings</div>
+  </div>
+
+  <div id="output">
+    <div class="output-header">
+      <h2>Week's Content <span>Ready</span></h2>
+      <button class="btn-reset" onclick="reset()">← Start Over</button>
+    </div>
+    <div class="content-grid" id="contentGrid"></div>
+  </div>
+</main>
+
+<footer>
+  Sound You Can Feel &nbsp;·&nbsp; soundyoucanfeel.me &nbsp;·&nbsp; Internal use only
+</footer>
+
+<script>
+  // Set week badge
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+  document.getElementById('weekBadge').textContent = `Week ${week} · ${now.getFullYear()}`;
+
+  // Chip toggles
+  document.querySelectorAll('.option-chip').forEach(chip => {
+    chip.addEventListener('click', () => chip.classList.toggle('active'));
+  });
+
+  const loadingMessages = [
+    'Analysing research findings...',
+    'Building the business case...',
+    'Writing the LinkedIn article...',
+    'Scripting the reel...',
+    'Designing the carousel structure...',
+    'Crafting the image post...',
+    'Applying Kennedy\'s voice rules...',
+    'Final polish...',
+  ];
+
+  let msgInterval;
+
+  function startLoadingMessages() {
+    let i = 0;
+    const el = document.getElementById('loadingMsg');
+    el.textContent = loadingMessages[0];
+    msgInterval = setInterval(() => {
+      i = (i + 1) % loadingMessages.length;
+      el.textContent = loadingMessages[i];
+    }, 3000);
+  }
+
+  function stopLoadingMessages() {
+    clearInterval(msgInterval);
+  }
+
+  async function generate() {
+    const input = document.getElementById('grokInput').value.trim();
+    if (!input) {
+      showError('Please paste the Grok research email before generating.');
+      return;
+    }
+
+    const chips = {
+      linkedin: document.getElementById('chip-linkedin').classList.contains('active'),
+      carousel: document.getElementById('chip-carousel').classList.contains('active'),
+      reel: document.getElementById('chip-reel').classList.contains('active'),
+      static: document.getElementById('chip-static').classList.contains('active'),
+    };
+
+    const selected = Object.entries(chips).filter(([,v]) => v).map(([k]) => k);
+    if (!selected.length) {
+      showError('Select at least one content type.');
+      return;
+    }
+
+    hideError();
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('loading').classList.add('visible');
+    document.getElementById('output').classList.remove('visible');
+    startLoadingMessages();
+
+    const systemPrompt = `You are the content writer for Sound You Can Feel (SYCF), a Dubai-based bespoke background music consultancy founded in 2000. Kennedy Stephenson is the Founder and Music Director — 27 years in the music and DJ industry. SYCF serves luxury hotels, restaurants, cafes, retail and F&B brands across UAE and GCC. Clients include Marriott, Jumeirah, Dior, Bvlgari, Caribou Coffee UAE. SYCF operates across 180+ locations.
+
+WHAT SYCF DOES: Creates 24-hour brand-aligned bespoke playlists and soundtracks for commercial spaces. Provides the full playback and delivery system. Fully managed and curated.
+WHAT SYCF DOES NOT DO: No sonic logos. No jingles. No sync licensing. No original composition. Never use the word "sonic" as a descriptor for SYCF's services.
+
+PREFERRED LANGUAGE: bespoke background music, BGM, soundtracks, atmosphere design, music strategy, curated playlists, daypart programming.
+
+KEY DATA TO REFERENCE WHEN RELEVANT:
+- HUI Research / Soundtrack Your Brand: 9% F&B revenue uplift, 1.8 million transactions, 16 restaurant sites
+- North, Hargreaves and McKendrick: 23% higher spend with slow tempo music, up to 10% increase with brand-congruent music
+- Global BGM market: $2.04B forecast, 6.35% CAGR, projected $2.78B by 2031
+
+KENNEDY'S VOICE RULES — apply to every piece:
+- No em dashes. Use ellipses (...) for pauses
+- No exclamation marks. Ever.
+- No consultant language: no "leverage", "ecosystem", "seamlessly", "delve into", "landscape", "straightforward"
+- Open with the strongest material. No warm-up sentences.
+- Short sentences. One idea per paragraph.
+- Direct, dry, confident. 27-year veteran who's been in the room.
+- Deliberate minor grammar imperfections for natural tone (missing apostrophes occasionally)
+- Never name competing hotel groups
+
+CTAs: B2B = wa.me/971585991689 or soundyoucanfeel.me
+
+TARGET AUDIENCE: Hotel GMs, F&B directors, retail operations directors, marketing leads in UAE and GCC.
+
+When given Grok research, produce the requested content types. For each one, output it in this exact format:
+
+===POST_START===
+TYPE: [LINKEDIN|CAROUSEL|REEL|STATIC]
+DAY: [Tuesday|Wednesday|Thursday|Friday]
+PLATFORMS: [platforms]
+TITLE: [title]
+CONTENT:
+[full content]
+IMAGE_PROMPT: [Grok image generation prompt — faceless/behind-subject editorial style, dark aesthetic, no hotel lobbies, diverse commercial spaces]
+===POST_END===
+
+Produce all requested content types in one response. Nothing before the first ===POST_START=== and nothing after the last ===POST_END===.`;
+
+    const formatInstructions = {
+      linkedin: 'LINKEDIN ARTICLE (300 words, Kennedy first-person, strong data hook, ends with engagement question or observation, full hashtags)',
+      carousel: 'DATA CAROUSEL (7 slides: slide 1 = hook, slides 2-6 = one key stat or insight each with source, slide 7 = CTA. Format each slide as: SLIDE N | Headline: ... | Body: ... | Source if applicable)',
+      reel: 'REEL SCRIPT (60 seconds spoken, broken into 5 timed sections with visual direction notes, first 3 words must stop the scroll, Kennedy to camera, punchy, no jargon, caption below)',
+      static: 'STATIC IMAGE POST (one statement max 15 words bold and memorable, then 100-word caption with hashtags)',
+    };
+
+    const requestedFormats = selected.map(k => formatInstructions[k]).join('\n');
+
+    const userPrompt = `Here is this week's Grok research pack:\n\n${input}\n\nProduce the following content types based on this research:\n${requestedFormats}\n\nPick the single most compelling finding from the research as the week's theme and anchor all content around it.`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 4000,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }],
+        }),
+      });
+
+      if (!response.ok) throw new Error(`API error ${response.status}`);
+
+      const data = await response.json();
+      const text = data.content?.[0]?.text || '';
+
+      stopLoadingMessages();
+      document.getElementById('loading').classList.remove('visible');
+
+      const posts = parsePosts(text);
+
+      if (!posts.length) throw new Error('No content returned. Try again.');
+
+      renderPosts(posts);
+      document.getElementById('output').classList.add('visible');
+      document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (err) {
+      stopLoadingMessages();
+      document.getElementById('loading').classList.remove('visible');
+      showError('Something went wrong: ' + err.message);
+    } finally {
+      document.getElementById('generateBtn').disabled = false;
+    }
+  }
+
+  function parsePosts(text) {
+    const posts = [];
+    const blocks = text.split('===POST_START===').filter(b => b.includes('===POST_END==='));
+
+    blocks.forEach(block => {
+      const content = block.split('===POST_END===')[0].trim();
+      const lines = content.split('\n');
+
+      const get = (key) => {
+        const line = lines.find(l => l.startsWith(key + ':'));
+        return line ? line.replace(key + ':', '').trim() : '';
+      };
+
+      const typeRaw = get('TYPE');
+      const day = get('DAY');
+      const platforms = get('PLATFORMS');
+      const title = get('TITLE');
+
+      const contentStart = content.indexOf('CONTENT:\n') + 'CONTENT:\n'.length;
+      const imageStart = content.lastIndexOf('\nIMAGE_PROMPT:');
+      const mainContent = imageStart > -1
+        ? content.slice(contentStart, imageStart).trim()
+        : content.slice(contentStart).trim();
+      const imagePrompt = imageStart > -1
+        ? content.slice(imageStart + '\nIMAGE_PROMPT:'.length).trim()
+        : '';
+
+      const typeLabels = {
+        LINKEDIN: 'LinkedIn Article',
+        CAROUSEL: 'Data Carousel',
+        REEL: 'Reel Script',
+        STATIC: 'Static Image Post',
+      };
+
+      posts.push({ type: typeRaw, typeLabel: typeLabels[typeRaw] || typeRaw, day, platforms, title, content: mainContent, imagePrompt });
+    });
+
+    return posts;
+  }
+
+  const platformColors = {
+    LinkedIn: '#0077b5',
+    Instagram: '#c13584',
+    TikTok: '#ff0050',
+    Facebook: '#1877f2',
+  };
+
+  function renderPosts(posts) {
+    const grid = document.getElementById('contentGrid');
+    grid.innerHTML = '';
+
+    posts.forEach((post, i) => {
+      const platformTags = post.platforms.split(/[,+&]/).map(p => p.trim()).filter(Boolean);
+
+      const card = document.createElement('div');
+      card.className = 'content-card';
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="card-meta">
+            <span class="card-day">${post.day}</span>
+            <span class="card-type">${post.typeLabel}</span>
+          </div>
+          <div class="card-platforms">
+            ${platformTags.map(p => `<span class="platform-tag">${p}</span>`).join('')}
+          </div>
+        </div>
+        <div class="card-body">
+          ${post.title ? `<div style="font-family:'Playfair Display',serif;font-size:18px;color:#fff;margin-bottom:16px;line-height:1.3;">${post.title}</div>` : ''}
+          <pre id="content-${i}">${escapeHtml(post.content)}</pre>
+          ${post.imagePrompt ? `
+            <div style="margin-top:24px;padding:16px;background:#111;border:1px solid #222;border-radius:4px;border-left:3px solid var(--gold);">
+              <div style="font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Grok Image Prompt</div>
+              <pre style="font-size:13px;color:#888;white-space:pre-wrap;" id="img-${i}">${escapeHtml(post.imagePrompt)}</pre>
+            </div>
+          ` : ''}
+        </div>
+        <div class="card-footer">
+          ${post.imagePrompt ? `<button class="btn-copy" onclick="copyText('img-${i}', this)">Copy Image Prompt</button>` : ''}
+          <button class="btn-copy" onclick="copyText('content-${i}', this)">Copy Post</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function copyText(id, btn) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText(el.textContent).then(() => {
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = id.startsWith('img') ? 'Copy Image Prompt' : 'Copy Post';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorBox');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  function hideError() {
+    document.getElementById('errorBox').classList.remove('visible');
+  }
+
+  function reset() {
+    document.getElementById('grokInput').value = '';
+    document.getElementById('output').classList.remove('visible');
+    document.getElementById('grokInput').scrollIntoView({ behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
