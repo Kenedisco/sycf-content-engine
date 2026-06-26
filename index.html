@@ -414,13 +414,13 @@
 <main>
   <div class="intro">
     <h1>Weekly Content<br><em>Generator</em></h1>
-    <p>Paste the Monday Grok research email below. Hit Generate. Get 4 platform-ready posts in Kennedy's voice.</p>
+    <p>Paste the Friday Grok research email below. Hit Generate. Get 7 platform-ready posts in Kennedy's voice.</p>
   </div>
 
   <div class="steps">
     <div class="step">
       <div class="step-num">Step 1</div>
-      <p>Kennedy forwards the Grok email Monday 6am</p>
+      <p>Kennedy forwards the Grok email Monday morning</p>
     </div>
     <div class="step">
       <div class="step-num">Step 2</div>
@@ -428,7 +428,7 @@
     </div>
     <div class="step">
       <div class="step-num">Step 3</div>
-      <p>Hit Generate — 4 posts ready in ~30 seconds</p>
+      <p>Hit Generate — 7 posts ready in ~45 seconds</p>
     </div>
     <div class="step">
       <div class="step-num">Step 4</div>
@@ -441,8 +441,11 @@
     <textarea id="grokInput" placeholder="Paste the Monday Grok email here...&#10;&#10;Include all findings, stats, content ideas and anything else Grok sent."></textarea>
 
     <div class="options-row">
-      <label class="option-chip active" id="chip-linkedin">
-        <input type="checkbox" checked> LinkedIn Article
+      <label class="option-chip active" id="chip-linkedin1">
+        <input type="checkbox" checked> LinkedIn Article 1 (Data)
+      </label>
+      <label class="option-chip active" id="chip-linkedin2">
+        <input type="checkbox" checked> LinkedIn Article 2 (Opinion)
       </label>
       <label class="option-chip active" id="chip-carousel">
         <input type="checkbox" checked> Data Carousel
@@ -450,8 +453,11 @@
       <label class="option-chip active" id="chip-reel">
         <input type="checkbox" checked> Reel Script
       </label>
-      <label class="option-chip active" id="chip-static">
-        <input type="checkbox" checked> Static Image Post
+      <label class="option-chip active" id="chip-static1">
+        <input type="checkbox" checked> Static Image Post 1
+      </label>
+      <label class="option-chip active" id="chip-static2">
+        <input type="checkbox" checked> Static Image Post 2
       </label>
     </div>
 
@@ -495,10 +501,12 @@
   const loadingMessages = [
     'Analysing research findings...',
     'Building the business case...',
-    'Writing the LinkedIn article...',
+    'Writing LinkedIn article 1 — data...',
+    'Writing LinkedIn article 2 — opinion...',
     'Scripting the reel...',
     'Designing the carousel structure...',
-    'Crafting the image post...',
+    'Crafting image post 1...',
+    'Crafting image post 2...',
     'Applying Kennedy\'s voice rules...',
     'Final polish...',
   ];
@@ -527,10 +535,12 @@
     }
 
     const chips = {
-      linkedin: document.getElementById('chip-linkedin').classList.contains('active'),
+      linkedin1: document.getElementById('chip-linkedin1').classList.contains('active'),
+      linkedin2: document.getElementById('chip-linkedin2').classList.contains('active'),
       carousel: document.getElementById('chip-carousel').classList.contains('active'),
       reel: document.getElementById('chip-reel').classList.contains('active'),
-      static: document.getElementById('chip-static').classList.contains('active'),
+      static1: document.getElementById('chip-static1').classList.contains('active'),
+      static2: document.getElementById('chip-static2').classList.contains('active'),
     };
 
     const selected = Object.entries(chips).filter(([,v]) => v).map(([k]) => k);
@@ -574,27 +584,29 @@ TARGET AUDIENCE: Hotel GMs, F&B directors, retail operations directors, marketin
 When given Grok research, produce the requested content types. For each one, output it in this exact format:
 
 ===POST_START===
-TYPE: [LINKEDIN|CAROUSEL|REEL|STATIC]
-DAY: [Tuesday|Wednesday|Thursday|Friday]
+TYPE: [LINKEDIN1|LINKEDIN2|CAROUSEL|REEL|STATIC1|STATIC2]
+DAY: [Monday|Tuesday|Wednesday|Thursday|Friday|Saturday]
 PLATFORMS: [platforms]
 TITLE: [title]
 CONTENT:
 [full content]
-IMAGE_PROMPT: [Grok image generation prompt — faceless/behind-subject editorial style, dark aesthetic, no hotel lobbies, diverse commercial spaces]
+IMAGE_PROMPT: [Grok image generation prompt — faceless/behind-subject editorial style, dark aesthetic, no hotel lobbies, diverse commercial spaces. For LINKEDIN1 and LINKEDIN2 write N/A as these are text-only posts]
 ===POST_END===
 
 Produce all requested content types in one response. Nothing before the first ===POST_START=== and nothing after the last ===POST_END===.`;
 
     const formatInstructions = {
-      linkedin: 'LINKEDIN ARTICLE (300 words, Kennedy first-person, strong data hook, ends with engagement question or observation, full hashtags)',
-      carousel: 'DATA CAROUSEL (7 slides: slide 1 = hook, slides 2-6 = one key stat or insight each with source, slide 7 = CTA. Format each slide as: SLIDE N | Headline: ... | Body: ... | Source if applicable)',
-      reel: 'REEL SCRIPT (60 seconds spoken, broken into 5 timed sections with visual direction notes, first 3 words must stop the scroll, Kennedy to camera, punchy, no jargon, caption below)',
-      static: 'STATIC IMAGE POST (one statement max 15 words bold and memorable, then 100-word caption with hashtags)',
+      linkedin1: 'LINKEDIN ARTICLE 1 — DATA-DRIVEN (300 words, Kennedy first-person, opens with a hard stat or research finding, builds the business case for managed BGM, ends with an observation or question that invites comments, full hashtags, text only no image needed)',
+      linkedin2: 'LINKEDIN ARTICLE 2 — OPINION/OBSERVATION (300 words, Kennedy first-person, draws from 27 years of industry experience, a pattern he sees operators getting wrong week after week, conversational and direct, no hard data required, dry wit, ends with a provocative take, full hashtags, text only no image needed)',
+      carousel: 'DATA CAROUSEL (7 slides: slide 1 = hook stat, slides 2-6 = one key stat or insight each with source, slide 7 = CTA. Format each slide as: SLIDE N | Headline: ... | Body: ... | Source if applicable. Include Instagram + LinkedIn caption below the slides)',
+      reel: 'REEL SCRIPT (60 seconds spoken, broken into 5 timed sections with visual direction notes, first 3 words must stop the scroll, Kennedy to camera, punchy, no jargon, include caption with hashtags below)',
+      static1: 'STATIC IMAGE POST 1 — DATA QUOTE (one powerful stat or data point max 15 words, bold and centred on dark background, then 100-word caption with context and hashtags. Different stat from the carousel.)',
+      static2: 'STATIC IMAGE POST 2 — OPINION QUOTE (one sharp opinion or observation from Kennedy max 15 words, something a hotel GM or F&B director would screenshot and save, then 100-word caption with hashtags)',
     };
 
     const requestedFormats = selected.map(k => formatInstructions[k]).join('\n');
 
-    const userPrompt = `Here is this week's Grok research pack:\n\n${input}\n\nProduce the following content types based on this research:\n${requestedFormats}\n\nPick the single most compelling finding from the research as the week's theme and anchor all content around it.`;
+    const userPrompt = `Here is this week's Grok research pack:\n\n${input}\n\nProduce the following content types based on this research:\n${requestedFormats}\n\nPick the single most compelling finding from the research as the week's theme and anchor all content around it. Spread posts across Tuesday to Saturday — two LinkedIn articles Tuesday and Thursday, carousel Wednesday, reel Friday, two static image posts Wednesday and Saturday.`;
 
     try {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -602,7 +614,7 @@ Produce all requested content types in one response. Nothing before the first ==
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 4000,
+          max_tokens: 7000,
           system: systemPrompt,
           messages: [{ role: 'user', content: userPrompt }],
         }),
@@ -661,10 +673,12 @@ Produce all requested content types in one response. Nothing before the first ==
         : '';
 
       const typeLabels = {
-        LINKEDIN: 'LinkedIn Article',
+        LINKEDIN1: 'LinkedIn Article — Data',
+        LINKEDIN2: 'LinkedIn Article — Opinion',
         CAROUSEL: 'Data Carousel',
         REEL: 'Reel Script',
-        STATIC: 'Static Image Post',
+        STATIC1: 'Static Image Post — Data Quote',
+        STATIC2: 'Static Image Post — Opinion Quote',
       };
 
       posts.push({ type: typeRaw, typeLabel: typeLabels[typeRaw] || typeRaw, day, platforms, title, content: mainContent, imagePrompt });
@@ -702,7 +716,7 @@ Produce all requested content types in one response. Nothing before the first ==
         <div class="card-body">
           ${post.title ? `<div style="font-family:'Playfair Display',serif;font-size:18px;color:#fff;margin-bottom:16px;line-height:1.3;">${post.title}</div>` : ''}
           <pre id="content-${i}">${escapeHtml(post.content)}</pre>
-          ${post.imagePrompt ? `
+          ${post.imagePrompt && post.imagePrompt !== 'N/A' ? `
             <div style="margin-top:24px;padding:16px;background:#111;border:1px solid #222;border-radius:4px;border-left:3px solid var(--gold);">
               <div style="font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Grok Image Prompt</div>
               <pre style="font-size:13px;color:#888;white-space:pre-wrap;" id="img-${i}">${escapeHtml(post.imagePrompt)}</pre>
@@ -710,7 +724,7 @@ Produce all requested content types in one response. Nothing before the first ==
           ` : ''}
         </div>
         <div class="card-footer">
-          ${post.imagePrompt ? `<button class="btn-copy" onclick="copyText('img-${i}', this)">Copy Image Prompt</button>` : ''}
+          ${post.imagePrompt && post.imagePrompt !== 'N/A' ? `<button class="btn-copy" onclick="copyText('img-${i}', this)">Copy Image Prompt</button>` : ''}
           <button class="btn-copy" onclick="copyText('content-${i}', this)">Copy Post</button>
         </div>
       `;
