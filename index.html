@@ -478,6 +478,13 @@
       <h2>Week's Content <span>Ready</span></h2>
       <button class="btn-reset" onclick="reset()">← Start Over</button>
     </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:32px;align-items:center;flex-wrap:wrap;">
+      <input id="emailInput" type="email" placeholder="Enter email address..." style="flex:1;min-width:220px;background:#111;border:1px solid #222;border-radius:6px;color:#e8e8e8;font-family:'Inter',sans-serif;font-size:14px;padding:12px 16px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='rgba(201,168,76,0.4)'" onblur="this.style.borderColor='#222'">
+      <button onclick="sendEmail()" id="emailBtn" style="padding:12px 24px;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);border-radius:6px;color:#C9A84C;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.06em;cursor:pointer;white-space:nowrap;transition:all 0.15s;" onmouseover="this.style.background='#C9A84C';this.style.color='#000'" onmouseout="this.style.background='rgba(201,168,76,0.15)';this.style.color='#C9A84C'">Send to Email</button>
+      <div id="emailStatus" style="font-size:13px;color:#888;"></div>
+    </div>
+
     <div class="content-grid" id="contentGrid"></div>
   </div>
 </main>
@@ -695,6 +702,7 @@ Produce all requested content types in one response. Nothing before the first ==
   };
 
   function renderPosts(posts) {
+    window.generatedPosts = posts;
     const grid = document.getElementById('contentGrid');
     grid.innerHTML = '';
 
@@ -762,6 +770,82 @@ Produce all requested content types in one response. Nothing before the first ==
     document.getElementById('grokInput').value = '';
     document.getElementById('output').classList.remove('visible');
     document.getElementById('grokInput').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async function sendEmail() {
+    const email = document.getElementById('emailInput').value.trim();
+    if (!email || !email.includes('@')) {
+      document.getElementById('emailStatus').textContent = 'Enter a valid email address.';
+      document.getElementById('emailStatus').style.color = '#cc5555';
+      return;
+    }
+
+    if (!window.generatedPosts || !window.generatedPosts.length) {
+      document.getElementById('emailStatus').textContent = 'No content to send yet.';
+      return;
+    }
+
+    const btn = document.getElementById('emailBtn');
+    btn.textContent = 'Sending...';
+    btn.style.pointerEvents = 'none';
+    document.getElementById('emailStatus').textContent = '';
+
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const week = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+
+    let emailBody = `<div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;background:#0a0a0a;color:#e8e8e8;padding:40px;">`;
+    emailBody += `<div style="border-bottom:2px solid #C9A84C;padding-bottom:20px;margin-bottom:32px;">`;
+    emailBody += `<h1 style="font-size:24px;color:#C9A84C;margin:0 0 4px;">Sound You Can Feel</h1>`;
+    emailBody += `<p style="color:#555;font-size:13px;margin:0;">Week ${week} Content Pack · ${now.toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'})}</p>`;
+    emailBody += `</div>`;
+
+    window.generatedPosts.forEach((post, i) => {
+      emailBody += `<div style="background:#111;border:1px solid #222;border-radius:6px;margin-bottom:24px;overflow:hidden;">`;
+      emailBody += `<div style="background:#181818;padding:12px 20px;border-bottom:1px solid #222;">`;
+      emailBody += `<span style="color:#C9A84C;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;">${post.day}</span>`;
+      emailBody += `<span style="color:#888;font-size:12px;margin-left:12px;">${post.typeLabel}</span>`;
+      emailBody += `<span style="color:#555;font-size:11px;margin-left:12px;">${post.platforms}</span>`;
+      emailBody += `</div>`;
+      emailBody += `<div style="padding:20px;">`;
+      if (post.title) emailBody += `<p style="color:#fff;font-size:16px;font-weight:700;margin:0 0 12px;">${post.title}</p>`;
+      emailBody += `<pre style="white-space:pre-wrap;word-wrap:break-word;font-family:Arial,sans-serif;font-size:14px;line-height:1.7;color:#e8e8e8;margin:0;">${post.content}</pre>`;
+      if (post.imagePrompt && post.imagePrompt !== 'N/A') {
+        emailBody += `<div style="margin-top:16px;padding:14px;background:#0a0a0a;border-left:3px solid #C9A84C;border-radius:3px;">`;
+        emailBody += `<p style="color:#C9A84C;font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 6px;">Grok Image Prompt</p>`;
+        emailBody += `<p style="color:#888;font-size:13px;margin:0;">${post.imagePrompt}</p>`;
+        emailBody += `</div>`;
+      }
+      emailBody += `</div></div>`;
+    });
+
+    emailBody += `<p style="color:#555;font-size:12px;text-align:center;margin-top:32px;">soundyoucanfeel.me &nbsp;·&nbsp; Internal use only</p>`;
+    emailBody += `</div>`;
+
+    try {
+      const res = await fetch('/api/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: email, subject: `SYCF Week ${week} Content Pack`, html: emailBody }),
+      });
+
+      if (res.ok) {
+        document.getElementById('emailStatus').textContent = `Sent to ${email}`;
+        document.getElementById('emailStatus').style.color = '#5cb85c';
+        btn.textContent = 'Sent';
+        setTimeout(() => {
+          btn.textContent = 'Send to Email';
+          btn.style.pointerEvents = 'auto';
+        }, 3000);
+      } else {
+        throw new Error('Send failed');
+      }
+    } catch (err) {
+      document.getElementById('emailStatus').textContent = 'Failed to send. Try again.';
+      document.getElementById('emailStatus').style.color = '#cc5555';
+      btn.textContent = 'Send to Email';
+      btn.style.pointerEvents = 'auto';
+    }
   }
 </script>
 </body>
