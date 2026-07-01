@@ -459,6 +459,9 @@
       <label class="option-chip active" id="chip-static2">
         <input type="checkbox" checked> Static Image Post 2
       </label>
+      <label class="option-chip active" id="chip-linkedin-daily">
+        <input type="checkbox" checked> LinkedIn Daily (7 posts)
+      </label>
     </div>
 
     <button class="btn-generate" id="generateBtn" onclick="generate()">
@@ -514,6 +517,7 @@
     'Designing the carousel structure...',
     'Crafting image post 1...',
     'Crafting image post 2...',
+    'Building the LinkedIn Daily rotation...',
     'Applying Kennedy\'s voice rules...',
     'Final polish...',
   ];
@@ -548,6 +552,7 @@
       reel: document.getElementById('chip-reel').classList.contains('active'),
       static1: document.getElementById('chip-static1').classList.contains('active'),
       static2: document.getElementById('chip-static2').classList.contains('active'),
+      linkedinDaily: document.getElementById('chip-linkedin-daily').classList.contains('active'),
     };
 
     const selected = Object.entries(chips).filter(([,v]) => v).map(([k]) => k);
@@ -591,14 +596,40 @@ TARGET AUDIENCE: Hotel GMs, F&B directors, retail operations directors, marketin
 When given Grok research, produce the requested content types. For each one, output it in this exact format:
 
 ===POST_START===
-TYPE: [LINKEDIN1|LINKEDIN2|CAROUSEL|REEL|STATIC1|STATIC2]
-DAY: [Monday|Tuesday|Wednesday|Thursday|Friday|Saturday]
+TYPE: [LINKEDIN1|LINKEDIN2|CAROUSEL|REEL|STATIC1|STATIC2|LINKEDIN_DAILY]
+DAY: [Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday]
 PLATFORMS: [platforms]
 TITLE: [title]
 CONTENT:
 [full content]
 IMAGE_PROMPT: [Grok image generation prompt — faceless/behind-subject editorial style, dark aesthetic, no hotel lobbies, diverse commercial spaces. For LINKEDIN1 and LINKEDIN2 write N/A as these are text-only posts]
 ===POST_END===
+
+═══════════════════════════════════
+LINKEDIN_DAILY RULES
+═══════════════════════════════════
+When LINKEDIN_DAILY is requested, produce SEVEN separate post blocks, one for each day Monday through Sunday, all with TYPE: LINKEDIN_DAILY. Each follows this fixed segment rotation:
+Monday = Luxury Hotels
+Tuesday = Multi-Location Brands (10-100+ sites across multiple countries)
+Wednesday = Fine Dining
+Thursday = Trendy Cafes & Coffee Shops
+Friday = Retail Chains (50+ shops across markets)
+Saturday = repeat whichever segment has the strongest unused stat from this week's research
+Sunday = repeat whichever segment has the next strongest unused stat from this week's research
+
+Each LINKEDIN_DAILY post is a single-image post, not an article:
+TITLE = a headline stat or line, under 10 words, this goes ON the image so it must stand alone
+CONTENT = 2-3 sentences only for the LinkedIn text box: (1) state the finding plainly, (2) what it means for that segment, (3) a soft tie to SYCF's work, no hard CTA unless it's the designated CTA day
+IMAGE_PROMPT = one line, moody editorial dark photo matching that day's segment (hotel lobby, multi-site retail floor, fine dining room, cafe, retail storefront), no text baked into the image
+
+Pull the freshest matching stat from this week's Grok research first. If the research doesn't cover a given day's segment, fall back to:
+Luxury Hotels: 60% of luxury travelers prioritize hotels with great restaurants, up to 40% surge in positive reviews for strong dining/experience concepts. Wellness-integrated hotels see 20-35% higher ADR. 78% of guests prioritize personalized service, 65% would pay 10% more for it.
+Multi-Location Brands: Decentralized, inconsistent operations cost businesses 12-18 cents per dollar of non-compliant spend. Operationally consistent retailers outperform peers by 15-20% on comparable sales.
+Fine Dining: 64% of full-service diners say overall experience matters more than price. Atmosphere is the #2 factor in venue choice at 34%. 37% of diners actively seek music as part of the experience. 54% will pay a premium for a one-of-a-kind experience.
+Trendy Cafes & Coffee Shops: Music ambiance influences 33% of customer satisfaction in cafes. Free wifi increases dwell time 25%. 35% of specialty coffee drinkers consume out-of-home, meaning the in-store experience drives real acquisition.
+Retail Chains: 95% of retail execs expect rising costs in 2026, putting every fixed per-site cost under scrutiny. Modular, standardized systems reduce implementation time up to 50% while protecting consistency across sites.
+
+Never repeat the exact same stat across two days in the same week.
 
 Produce all requested content types in one response. Nothing before the first ===POST_START=== and nothing after the last ===POST_END===.`;
 
@@ -609,11 +640,12 @@ Produce all requested content types in one response. Nothing before the first ==
       reel: 'REEL SCRIPT (60 seconds spoken, broken into 5 timed sections with visual direction notes, first 3 words must stop the scroll, Kennedy to camera, punchy, no jargon, include caption with hashtags below)',
       static1: 'STATIC IMAGE POST 1 — DATA QUOTE (one powerful stat or data point max 15 words, bold and centred on dark background, then 100-word caption with context and hashtags. Different stat from the carousel.)',
       static2: 'STATIC IMAGE POST 2 — OPINION QUOTE (one sharp opinion or observation from Kennedy max 15 words, something a hotel GM or F&B director would screenshot and save, then 100-word caption with hashtags)',
+      linkedinDaily: 'LINKEDIN_DAILY — 7 separate single-image posts, one per day Monday through Sunday, following the segment rotation and format rules defined above.',
     };
 
     const requestedFormats = selected.map(k => formatInstructions[k]).join('\n');
 
-    const userPrompt = `Here is this week's Grok research pack:\n\n${input}\n\nProduce the following content types based on this research:\n${requestedFormats}\n\nPick the single most compelling finding from the research as the week's theme and anchor all content around it. Spread posts across Tuesday to Saturday — two LinkedIn articles Tuesday and Thursday, carousel Wednesday, reel Friday, two static image posts Wednesday and Saturday.`;
+    const userPrompt = `Here is this week's Grok research pack:\n\n${input}\n\nProduce the following content types based on this research:\n${requestedFormats}\n\nPick the single most compelling finding from the research as the week's theme and anchor all content around it. Spread the LINKEDIN1, LINKEDIN2, CAROUSEL, REEL, STATIC1 and STATIC2 posts across Tuesday to Saturday — two LinkedIn articles Tuesday and Thursday, carousel Wednesday, reel Friday, two static image posts Wednesday and Saturday. If LINKEDIN_DAILY was requested, it follows its own separate Monday-through-Sunday segment rotation as defined in the system rules, independent of this schedule.`;
 
     try {
       const response = await fetch('/api/generate', {
@@ -686,6 +718,7 @@ Produce all requested content types in one response. Nothing before the first ==
         REEL: 'Reel Script',
         STATIC1: 'Static Image Post — Data Quote',
         STATIC2: 'Static Image Post — Opinion Quote',
+        LINKEDIN_DAILY: 'LinkedIn Daily Post',
       };
 
       posts.push({ type: typeRaw, typeLabel: typeLabels[typeRaw] || typeRaw, day, platforms, title, content: mainContent, imagePrompt });
