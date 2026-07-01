@@ -460,7 +460,7 @@
         <input type="checkbox" checked> Static Image Post 2
       </label>
       <label class="option-chip active" id="chip-linkedin-daily">
-        <input type="checkbox" checked> LinkedIn Daily (5 posts)
+        <input type="checkbox" checked> LinkedIn Daily (5 + 2 backup)
       </label>
     </div>
 
@@ -608,14 +608,14 @@ IMAGE_PROMPT: [Grok image generation prompt — faceless/behind-subject editoria
 ═══════════════════════════════════
 LINKEDIN_DAILY RULES
 ═══════════════════════════════════
-When LINKEDIN_DAILY is requested, produce exactly FIVE separate post blocks, Monday through Friday only, all with TYPE: LINKEDIN_DAILY. No Saturday or Sunday posts. Fixed segment rotation:
+When LINKEDIN_DAILY is requested, produce exactly SEVEN separate post blocks, all with TYPE: LINKEDIN_DAILY. Five are assigned to weekdays, two are backups. Fixed segment rotation for the five assigned posts:
 Monday = Luxury Hotels
 Tuesday = Multi-Location Brands (10-100+ sites across multiple countries)
 Wednesday = Fine Dining
 Thursday = Trendy Cafes & Coffee Shops
 Friday = Retail Chains (50+ shops across markets)
 
-The Grok research this week may contain up to 7 candidate segment stats (2 extra as backup angles). Use the single strongest matching stat for each weekday's segment and ignore the rest. If two candidates exist for the same segment, pick whichever has the more specific, current number.
+The Grok research this week contains up to 7 candidate segment stats (2 extra as backup angles). Use the single strongest matching stat for each weekday's segment. For the two leftover candidates, produce two additional LINKEDIN_DAILY posts using DAY: Backup 1 and DAY: Backup 2 instead of a weekday name — same format as the rest, fully finished and ready to post, so Angelica can swap one in if a day's assigned angle turns out weak or if a stronger stat surfaces later in the week. If two candidates exist for the same segment, pick whichever has the more specific, current number for the assigned weekday, and use the other as one of the two backups.
 
 Each LINKEDIN_DAILY post is a single-image post, not an article:
 TITLE = a headline stat or line, under 10 words, this goes ON the image so it must stand alone
@@ -653,7 +653,7 @@ Produce all requested content types in one response. Nothing before the first ==
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 7000,
+          max_tokens: 9000,
           system: systemPrompt,
           messages: [{ role: 'user', content: userPrompt }],
         }),
